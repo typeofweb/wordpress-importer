@@ -1,0 +1,748 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model wp_commentmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  comment_id BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  comment_ wp_comments @relation(fields: [comment_id], references: [comment_ID])
+
+  @@index([comment_id], name: "comment_id")
+}
+
+model wp_comments {
+  comment_ID           BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  comment_post_ID      BigInt   @default(0) @db.UnsignedBigInt
+  comment_author       String   @db.TinyText
+  comment_author_email String   @default("") @db.VarChar(100)
+  comment_author_url   String   @default("") @db.VarChar(200)
+  comment_author_IP    String   @default("") @db.VarChar(100)
+  comment_date         DateTime @default(dbgenerated("0000-00-00 00:00:00")) @db.DateTime(0)
+  comment_date_gmt     DateTime @default(dbgenerated("0000-00-00 00:00:00")) @db.DateTime(0)
+  comment_content      String   @db.Text
+  comment_karma        Int      @default(0)
+  comment_approved     String   @default("1") @db.VarChar(20)
+  comment_agent        String   @default("") @db.VarChar(255)
+  comment_type         String   @default("comment") @db.VarChar(20)
+  comment_parent       BigInt   @default(0) @db.UnsignedBigInt
+  user_id              BigInt   @default(0) @db.UnsignedBigInt
+
+  user_        wp_users         @relation(fields: [user_id], references: [ID])
+  commentmeta_ wp_commentmeta[]
+  @@index([comment_approved, comment_date_gmt], name: "comment_approved_date_gmt")
+  @@index([comment_date_gmt], name: "comment_date_gmt")
+  @@index([comment_parent], name: "comment_parent")
+  @@index([comment_post_ID], name: "comment_post_ID")
+}
+
+model wp_ewwwio_images {
+  id            Int      @unique @default(autoincrement()) @db.UnsignedInt
+  attachment_id BigInt?  @db.UnsignedBigInt
+  gallery       String?  @db.VarChar(10)
+  resize        String?  @db.VarChar(75)
+  path          String   @db.Text
+  converted     String   @db.Text
+  results       String   @db.VarChar(75)
+  image_size    Int?     @db.UnsignedInt
+  orig_size     Int?     @db.UnsignedInt
+  backup        String?  @db.VarChar(100)
+  level         Int?     @db.UnsignedInt
+  pending       Boolean  @default(false)
+  updates       Int?     @db.UnsignedInt
+  updated       DateTime @default(dbgenerated("1971-01-01 00:00:00")) @db.Timestamp(0)
+  trace         Bytes?   @db.Blob
+}
+
+model wp_links {
+  link_id          BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  link_url         String   @default("") @db.VarChar(255)
+  link_name        String   @default("") @db.VarChar(255)
+  link_image       String   @default("") @db.VarChar(255)
+  link_target      String   @default("") @db.VarChar(25)
+  link_description String   @default("") @db.VarChar(255)
+  link_visible     String   @default("Y") @db.VarChar(20)
+  link_owner       BigInt   @default(1) @db.UnsignedBigInt
+  link_rating      Int      @default(0)
+  link_updated     DateTime @default(dbgenerated("0000-00-00 00:00:00")) @db.DateTime(0)
+  link_rel         String   @default("") @db.VarChar(255)
+  link_notes       String   @db.MediumText
+  link_rss         String   @default("") @db.VarChar(255)
+
+  @@index([link_visible], name: "link_visible")
+}
+
+model wp_options {
+  option_id    BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  option_name  String @unique @default("")
+  option_value String @db.LongText
+  autoload     String @default("yes") @db.VarChar(20)
+
+  @@index([autoload], name: "autoload")
+}
+
+model wp_orgseriesicons {
+  term_id Int    @id
+  icon    String @db.VarChar(100)
+}
+
+model wp_postmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  post_id    BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+
+  post_ wp_posts @relation(fields: [post_id], references: [ID])
+  @@index([post_id], name: "post_id")
+}
+
+model wp_posts {
+  ID                    BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  post_author           BigInt        @default(0) @db.UnsignedBigInt
+  post_date             DateTime      @default(dbgenerated("0000-00-00 00:00:00")) @db.DateTime(0)
+  post_date_gmt         DateTime      @default(dbgenerated("0000-00-00 00:00:00")) @db.DateTime(0)
+  post_content          String        @db.LongText
+  post_title            String        @db.Text
+  post_excerpt          String        @db.Text
+  post_status           String        @default("publish") @db.VarChar(20)
+  comment_status        String        @default("open") @db.VarChar(20)
+  ping_status           String        @default("open") @db.VarChar(20)
+  post_password         String        @default("") @db.VarChar(255)
+  post_name             String        @default("") @db.VarChar(200)
+  to_ping               String        @db.Text
+  pinged                String        @db.Text
+  post_modified         DateTime      @default(dbgenerated("0000-00-00 00:00:00")) @db.DateTime(0)
+  post_modified_gmt     DateTime      @default(dbgenerated("0000-00-00 00:00:00")) @db.DateTime(0)
+  post_content_filtered String        @db.LongText
+  post_parent           BigInt        @default(0) @db.UnsignedBigInt
+  guid                  String        @default("") @db.VarChar(255)
+  menu_order            Int           @default(0)
+  post_type             String        @default("post") @db.VarChar(20)
+  post_mime_type        String        @default("") @db.VarChar(100)
+  comment_count         BigInt        @default(0)
+  metas_                wp_postmeta[]
+  author_               wp_users      @relation(fields: [post_author], references: [ID])
+
+  term_relationships_ wp_term_relationships[]
+
+  @@index([post_author], name: "post_author")
+  @@index([post_parent], name: "post_parent")
+  @@index([post_type, post_status, post_date, ID], name: "type_status_date")
+}
+
+model wp_ppress_forms {
+  id           BigInt   @id @default(autoincrement())
+  name         String   @unique @db.VarChar(100)
+  form_id      BigInt
+  form_type    String   @default("") @db.VarChar(20)
+  builder_type String   @default("") @db.VarChar(20)
+  date         DateTime @default(dbgenerated("1000-01-01 00:00:00")) @db.DateTime(0)
+
+  @@index([form_id], name: "form_id")
+}
+
+model wp_ppress_formsmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  form_id    BigInt
+  form_type  String? @db.VarChar(20)
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  @@index([form_id], name: "form_id")
+  @@index([form_type], name: "form_type")
+  @@index([meta_key], name: "meta_key")
+}
+
+model wp_ppress_meta_data {
+  id         BigInt  @id @default(autoincrement())
+  meta_key   String? @db.VarChar(50)
+  meta_value String? @db.LongText
+  flag       String? @db.VarChar(20)
+
+  @@index([flag], name: "flag")
+  @@index([meta_key], name: "meta_key")
+}
+
+model wp_shortpixel_folders {
+  id                 Int                  @unique @default(autoincrement()) @db.MediumInt
+  path               String?              @db.VarChar(512)
+  name               String?              @db.VarChar(64)
+  path_md5           String?              @unique @db.Char(32)
+  file_count         Int?
+  status             Int                  @default(0) @db.SmallInt
+  ts_updated         DateTime             @default(now()) @db.Timestamp(0)
+  ts_created         DateTime             @default(dbgenerated("0000-00-00 00:00:00")) @db.Timestamp(0)
+  wp_shortpixel_meta wp_shortpixel_meta[]
+}
+
+model wp_shortpixel_meta {
+  id                    Int                   @unique @default(autoincrement()) @db.MediumInt
+  folder_id             Int                   @db.MediumInt
+  ext_meta_id           Int?
+  path                  String?               @db.VarChar(512)
+  name                  String?               @db.VarChar(64)
+  path_md5              String?               @unique @db.Char(32)
+  compressed_size       Int                   @default(0)
+  compression_type      Int?                  @db.TinyInt
+  keep_exif             Int?                  @db.TinyInt
+  cmyk2rgb              Int?                  @db.TinyInt
+  resize                Int?                  @db.TinyInt
+  resize_width          Int?                  @db.SmallInt
+  resize_height         Int?                  @db.SmallInt
+  backup                Int?                  @db.TinyInt
+  status                Int                   @default(0) @db.SmallInt
+  retries               Int                   @default(0) @db.TinyInt
+  message               String?               @db.VarChar(255)
+  ts_added              DateTime              @default(now()) @db.Timestamp(0)
+  ts_optimized          DateTime              @default(dbgenerated("0000-00-00 00:00:00")) @db.Timestamp(0)
+  wp_shortpixel_folders wp_shortpixel_folders @relation(fields: [folder_id], references: [id])
+
+  @@index([folder_id], name: "fk_shortpixel_meta_folder")
+}
+
+model wp_term_relationships {
+  object_id        BigInt @default(0) @db.UnsignedBigInt
+  term_taxonomy_id BigInt @default(0) @db.UnsignedBigInt
+  term_order       Int    @default(0)
+
+  post_          wp_posts         @relation(fields: [object_id], references: [ID])
+  term_taxonomy_ wp_term_taxonomy @relation(fields: [term_taxonomy_id], references: [term_taxonomy_id])
+
+  @@id([object_id, term_taxonomy_id])
+  @@index([term_taxonomy_id], name: "term_taxonomy_id")
+}
+
+model wp_term_taxonomy {
+  term_taxonomy_id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  term_id          BigInt @default(0) @db.UnsignedBigInt
+  taxonomy         String @default("") @db.VarChar(32)
+  description      String @db.LongText
+  parent           BigInt @default(0) @db.UnsignedBigInt
+  count            BigInt @default(0)
+
+  term_relationships_ wp_term_relationships[]
+  term_               wp_terms                @relation(fields: [term_id], references: [term_id])
+
+  @@unique([term_id, taxonomy], name: "term_id_taxonomy")
+  @@index([taxonomy], name: "taxonomy")
+}
+
+model wp_termmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  term_id    BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  term_ wp_terms @relation(fields: [term_id], references: [term_id])
+
+  @@index([term_id], name: "term_id")
+}
+
+model wp_terms {
+  term_id    BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String @default("") @db.VarChar(200)
+  slug       String @default("") @db.VarChar(200)
+  term_group BigInt @default(0)
+
+  term_taxonomy_ wp_term_taxonomy[]
+  termmeta_      wp_termmeta[]
+}
+
+model wp_usermeta {
+  umeta_id   BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  user_ wp_users @relation(fields: [user_id], references: [ID])
+
+  @@index([user_id], name: "user_id")
+}
+
+model wp_users {
+  ID                  BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  user_login          String   @default("") @db.VarChar(60)
+  user_pass           String   @default("") @db.VarChar(255)
+  user_nicename       String   @default("") @db.VarChar(50)
+  user_email          String   @default("") @db.VarChar(100)
+  user_url            String   @default("") @db.VarChar(100)
+  user_registered     DateTime @default(dbgenerated("0000-00-00 00:00:00")) @db.DateTime(0)
+  user_activation_key String   @default("") @db.VarChar(255)
+  user_status         Int      @default(0)
+  display_name        String   @default("") @db.VarChar(250)
+
+  usermetas_ wp_usermeta[]
+  comments_  wp_comments[]
+  posts_     wp_posts[]
+
+  @@index([user_email], name: "user_email")
+  @@index([user_login], name: "user_login_key")
+  @@index([user_nicename], name: "user_nicename")
+}
+
+model wp_wc_avatars_cache {
+  id         Int     @id @default(autoincrement())
+  user_id    Int     @default(0)
+  user_email String  @unique @db.VarChar(100)
+  url        String  @db.VarChar(255)
+  hash       String  @db.VarChar(32)
+  maketime   Int     @default(0)
+  cached     Boolean @default(false)
+
+  @@index([cached], name: "cached")
+  @@index([maketime], name: "maketime")
+  @@index([user_id], name: "user_id")
+}
+
+model wp_wc_comments_subscription {
+  id                Int      @id @default(autoincrement())
+  email             String   @db.VarChar(100)
+  subscribtion_id   Int
+  post_id           Int
+  subscribtion_type String   @db.VarChar(20)
+  activation_key    String   @db.VarChar(32)
+  confirm           Int?     @default(0) @db.TinyInt
+  subscription_date DateTime @default(now()) @db.Timestamp(0)
+  imported_from     String   @default("") @db.VarChar(25)
+
+  @@unique([subscribtion_id, email, post_id], name: "subscribe_unique_index")
+  @@index([confirm], name: "confirm")
+  @@index([post_id], name: "post_id")
+  @@index([subscribtion_id], name: "subscribtion_id")
+}
+
+model wp_wc_feedback_forms {
+  id        Int    @id @default(autoincrement())
+  post_id   Int    @default(0)
+  unique_id String @unique @db.VarChar(15)
+  question  String @db.VarChar(255)
+  opened    Int    @default(0) @db.UnsignedTinyInt
+  content   String @db.LongText
+
+  @@index([post_id], name: "post_id")
+}
+
+model wp_wc_follow_users {
+  id               Int      @id @default(autoincrement())
+  post_id          Int      @default(0)
+  user_id          Int      @default(0)
+  user_email       String   @db.VarChar(100)
+  user_name        String   @db.VarChar(255)
+  follower_id      Int      @default(0)
+  follower_email   String   @db.VarChar(100)
+  follower_name    String   @db.VarChar(255)
+  activation_key   String   @db.VarChar(32)
+  confirm          Boolean  @default(false)
+  follow_timestamp Int
+  follow_date      DateTime @default(now()) @db.Timestamp(0)
+
+  @@unique([user_email, follower_email], name: "follow_unique_key")
+  @@index([confirm], name: "confirm")
+  @@index([follow_timestamp], name: "follow_timestamp")
+  @@index([follower_email], name: "follower_email")
+  @@index([follower_id], name: "follower_id")
+  @@index([post_id], name: "post_id")
+  @@index([user_email], name: "user_email")
+  @@index([user_id], name: "user_id")
+}
+
+model wp_wc_phrases {
+  id           Int    @id @default(autoincrement())
+  phrase_key   String @db.VarChar(100)
+  phrase_value String @db.Text
+
+  @@index([phrase_key], name: "phrase_key")
+}
+
+model wp_wc_users_rated {
+  id      Int    @id @default(autoincrement())
+  post_id Int    @default(0)
+  user_id Int    @default(0)
+  user_ip String @default("") @db.VarChar(32)
+  rating  Int
+  date    Int    @default(0) @db.UnsignedInt
+
+  @@index([post_id], name: "post_id")
+  @@index([user_id], name: "user_id")
+}
+
+model wp_wc_users_voted {
+  id         Int      @id @default(autoincrement())
+  user_id    String   @db.VarChar(32)
+  comment_id Int
+  vote_type  Int?
+  is_guest   Boolean? @default(false)
+  post_id    BigInt   @default(0) @db.UnsignedBigInt
+  date       Int      @default(0) @db.UnsignedInt
+
+  @@index([comment_id], name: "comment_id")
+  @@index([is_guest], name: "is_guest")
+  @@index([post_id], name: "post_id")
+  @@index([user_id], name: "user_id")
+  @@index([vote_type], name: "vote_type")
+}
+
+model wp_wfBlockedIPLog {
+  IP          Bytes  @default(dbgenerated("                ")) @db.Binary(16)
+  countryCode String @db.VarChar(2)
+  blockCount  Int    @default(0) @db.UnsignedInt
+  unixday     Int    @db.UnsignedInt
+  blockType   String @default("generic") @db.VarChar(50)
+
+  @@id([IP, unixday, blockType])
+}
+
+model wp_wfBlocks7 {
+  id          BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  type        Int     @default(0) @db.UnsignedInt
+  IP          Bytes   @default(dbgenerated("                ")) @db.Binary(16)
+  blockedTime BigInt
+  reason      String  @db.VarChar(255)
+  lastAttempt Int?    @default(0) @db.UnsignedInt
+  blockedHits Int?    @default(0) @db.UnsignedInt
+  expiration  BigInt  @default(0) @db.UnsignedBigInt
+  parameters  String? @db.Text
+
+  @@index([IP], name: "IP")
+  @@index([expiration], name: "expiration")
+  @@index([type], name: "type")
+}
+
+model wp_wfConfig {
+  name     String               @id @db.VarChar(100)
+  val      Bytes?
+  autoload wp_wfConfig_autoload @default(yes)
+}
+
+model wp_wfCrawlers {
+  IP         Bytes   @db.Binary(16)
+  patternSig Bytes   @db.Binary(16)
+  status     String  @db.Char(8)
+  lastUpdate Int     @db.UnsignedInt
+  PTR        String? @default("") @db.VarChar(255)
+
+  @@id([IP, patternSig])
+}
+
+model wp_wfFileChanges {
+  filenameHash String @id @db.Char(64)
+  file         String @db.VarChar(1000)
+  md5          String @db.Char(32)
+}
+
+model wp_wfFileMods {
+  filenameMD5        Bytes  @id @db.Binary(16)
+  filename           String @db.VarChar(1000)
+  knownFile          Int    @db.UnsignedTinyInt
+  oldMD5             Bytes  @db.Binary(16)
+  newMD5             Bytes  @db.Binary(16)
+  SHAC               Bytes  @default(dbgenerated("                                ")) @db.Binary(32)
+  stoppedOnSignature String @default("") @db.VarChar(255)
+  stoppedOnPosition  Int    @default(0) @db.UnsignedInt
+  isSafeFile         String @default("?") @db.VarChar(1)
+}
+
+model wp_wfHits {
+  id                Int     @id @default(autoincrement()) @db.UnsignedInt
+  attackLogTime     Float
+  ctime             Float
+  IP                Bytes?  @db.Binary(16)
+  jsRun             Int?    @default(0) @db.TinyInt
+  statusCode        Int     @default(200)
+  isGoogle          Int     @db.TinyInt
+  userID            Int     @db.UnsignedInt
+  newVisit          Int     @db.UnsignedTinyInt
+  URL               String? @db.Text
+  referer           String? @db.Text
+  UA                String? @db.Text
+  action            String  @default("") @db.VarChar(64)
+  actionDescription String? @db.Text
+  actionData        String? @db.Text
+
+  @@index([attackLogTime], name: "attackLogTime")
+  @@index([ctime], name: "k1")
+  @@index([IP, ctime], name: "k2")
+}
+
+model wp_wfHoover {
+  id      Int     @id @default(autoincrement()) @db.UnsignedInt
+  owner   String? @db.Text
+  host    String? @db.Text
+  path    String? @db.Text
+  hostKey Bytes?  @db.VarBinary(124)
+
+  @@index([hostKey], name: "k2")
+}
+
+model wp_wfIssues {
+  id          Int     @id @default(autoincrement()) @db.UnsignedInt
+  time        Int     @db.UnsignedInt
+  lastUpdated Int     @db.UnsignedInt
+  status      String  @db.VarChar(10)
+  type        String  @db.VarChar(20)
+  severity    Int     @db.UnsignedTinyInt
+  ignoreP     String  @db.Char(32)
+  ignoreC     String  @db.Char(32)
+  shortMsg    String  @db.VarChar(255)
+  longMsg     String? @db.Text
+  data        String? @db.Text
+
+  @@index([ignoreC], name: "ignoreC")
+  @@index([ignoreP], name: "ignoreP")
+  @@index([lastUpdated], name: "lastUpdated")
+  @@index([status], name: "status")
+}
+
+model wp_wfKnownFileList {
+  id   Int    @id @default(autoincrement()) @db.UnsignedInt
+  path String @db.Text
+}
+
+model wp_wfLiveTrafficHuman {
+  IP         Bytes @default(dbgenerated("                ")) @db.Binary(16)
+  identifier Bytes @default(dbgenerated("                                ")) @db.Binary(32)
+  expiration Int   @db.UnsignedInt
+
+  @@id([IP, identifier])
+  @@index([expiration], name: "expiration")
+}
+
+model wp_wfLocs {
+  IP          Bytes   @id @db.Binary(16)
+  ctime       Int     @db.UnsignedInt
+  failed      Int     @db.UnsignedTinyInt
+  city        String? @default("") @db.VarChar(255)
+  region      String? @default("") @db.VarChar(255)
+  countryName String? @default("") @db.VarChar(255)
+  countryCode String? @default("") @db.Char(2)
+  lat         Float?  @default(0.0000000) @db.Float
+  lon         Float?  @default(0.0000000) @db.Float
+}
+
+model wp_wfLogins {
+  id       Int     @id @default(autoincrement()) @db.UnsignedInt
+  hitID    Int?
+  ctime    Float
+  fail     Int     @db.UnsignedTinyInt
+  action   String  @db.VarChar(40)
+  username String  @db.VarChar(255)
+  userID   Int     @db.UnsignedInt
+  IP       Bytes?  @db.Binary(16)
+  UA       String? @db.Text
+
+  @@index([hitID], name: "hitID")
+  @@index([IP, fail], name: "k1")
+}
+
+model wp_wfNotifications {
+  id       String @id @default("") @db.VarChar(32)
+  new      Int    @default(1) @db.UnsignedTinyInt
+  category String @db.VarChar(255)
+  priority Int    @default(1000)
+  ctime    Int    @db.UnsignedInt
+  html     String @db.Text
+  links    String @db.Text
+}
+
+model wp_wfPendingIssues {
+  id          Int     @id @default(autoincrement()) @db.UnsignedInt
+  time        Int     @db.UnsignedInt
+  lastUpdated Int     @db.UnsignedInt
+  status      String  @db.VarChar(10)
+  type        String  @db.VarChar(20)
+  severity    Int     @db.UnsignedTinyInt
+  ignoreP     String  @db.Char(32)
+  ignoreC     String  @db.Char(32)
+  shortMsg    String  @db.VarChar(255)
+  longMsg     String? @db.Text
+  data        String? @db.Text
+
+  @@index([ignoreC], name: "ignoreC")
+  @@index([ignoreP], name: "ignoreP")
+  @@index([lastUpdated], name: "lastUpdated")
+  @@index([status], name: "status")
+}
+
+model wp_wfReverseCache {
+  IP         Bytes  @id @db.Binary(16)
+  host       String @db.VarChar(255)
+  lastUpdate Int    @db.UnsignedInt
+}
+
+model wp_wfSNIPCache {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  IP         String   @default("") @db.VarChar(45)
+  expiration DateTime @default(now()) @db.Timestamp(0)
+  body       String   @default("") @db.VarChar(255)
+  count      Int      @default(0) @db.UnsignedInt
+  type       Int      @default(0) @db.UnsignedInt
+
+  @@index([IP], name: "IP")
+  @@index([expiration], name: "expiration")
+  @@index([type], name: "type")
+}
+
+model wp_wfStatus {
+  id    BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  ctime Float
+  level Int    @db.UnsignedTinyInt
+  type  String @db.Char(5)
+  msg   String @db.VarChar(1000)
+
+  @@index([ctime], name: "k1")
+  @@index([type], name: "k2")
+}
+
+model wp_wfTrafficRates {
+  eMin    Int                       @db.UnsignedInt
+  IP      Bytes                     @default(dbgenerated("                ")) @db.Binary(16)
+  hitType wp_wfTrafficRates_hitType @default(hit)
+  hits    Int                       @db.UnsignedInt
+
+  @@id([eMin, IP, hitType])
+}
+
+model wp_wfls_2fa_secrets {
+  id       Int                      @id @default(autoincrement()) @db.UnsignedInt
+  user_id  BigInt                   @db.UnsignedBigInt
+  secret   Bytes                    @db.TinyBlob
+  recovery Bytes                    @db.Blob
+  ctime    Int                      @db.UnsignedInt
+  vtime    Int                      @db.UnsignedInt
+  mode     wp_wfls_2fa_secrets_mode @default(authenticator)
+
+  @@index([user_id], name: "user_id")
+}
+
+model wp_wfls_settings {
+  name     String                    @id @default("")
+  value    Bytes?
+  autoload wp_wfls_settings_autoload @default(yes)
+}
+
+model wp_yoast_indexable {
+  id                          Int       @id @default(autoincrement()) @db.UnsignedInt
+  permalink                   String?   @db.LongText
+  permalink_hash              String?
+  object_id                   Int?      @db.UnsignedInt
+  object_type                 String    @db.VarChar(32)
+  object_sub_type             String?   @db.VarChar(32)
+  author_id                   Int?      @db.UnsignedInt
+  post_parent                 Int?      @db.UnsignedInt
+  title                       String?   @db.Text
+  description                 String?   @db.MediumText
+  breadcrumb_title            String?   @db.Text
+  post_status                 String?
+  is_public                   Boolean?
+  is_protected                Boolean?  @default(false)
+  has_public_posts            Boolean?
+  number_of_pages             Int?      @db.UnsignedInt
+  canonical                   String?   @db.LongText
+  primary_focus_keyword       String?
+  primary_focus_keyword_score Int?
+  readability_score           Int?
+  is_cornerstone              Boolean?  @default(false)
+  is_robots_noindex           Boolean?  @default(false)
+  is_robots_nofollow          Boolean?  @default(false)
+  is_robots_noarchive         Boolean?  @default(false)
+  is_robots_noimageindex      Boolean?  @default(false)
+  is_robots_nosnippet         Boolean?  @default(false)
+  twitter_title               String?   @db.Text
+  twitter_image               String?   @db.LongText
+  twitter_description         String?   @db.LongText
+  twitter_image_id            String?
+  twitter_image_source        String?   @db.Text
+  open_graph_title            String?   @db.Text
+  open_graph_description      String?   @db.LongText
+  open_graph_image            String?   @db.LongText
+  open_graph_image_id         String?
+  open_graph_image_source     String?   @db.Text
+  open_graph_image_meta       String?   @db.MediumText
+  link_count                  Int?
+  incoming_link_count         Int?
+  prominent_words_version     Int?      @db.UnsignedInt
+  created_at                  DateTime? @db.DateTime(0)
+  updated_at                  DateTime  @default(now()) @db.Timestamp(0)
+  blog_id                     BigInt    @default(1)
+  language                    String?   @db.VarChar(32)
+  region                      String?   @db.VarChar(32)
+  schema_page_type            String?   @db.VarChar(64)
+  schema_article_type         String?   @db.VarChar(64)
+
+  @@index([object_id, object_type], name: "object_id_and_type")
+  @@index([object_type, object_sub_type], name: "object_type_and_sub_type")
+  @@index([permalink_hash], name: "permalink_hash")
+}
+
+model wp_yoast_indexable_hierarchy {
+  indexable_id Int    @db.UnsignedInt
+  ancestor_id  Int    @db.UnsignedInt
+  depth        Int?   @db.UnsignedInt
+  blog_id      BigInt @default(1)
+
+  @@id([indexable_id, ancestor_id])
+  @@index([ancestor_id], name: "ancestor_id")
+  @@index([depth], name: "depth")
+  @@index([indexable_id], name: "indexable_id")
+}
+
+model wp_yoast_migrations {
+  id      Int     @id @default(autoincrement()) @db.UnsignedInt
+  version String? @unique
+}
+
+model wp_yoast_primary_term {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  post_id    Int       @db.UnsignedInt
+  term_id    Int       @db.UnsignedInt
+  taxonomy   String    @db.VarChar(32)
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime  @default(now()) @db.Timestamp(0)
+  blog_id    BigInt    @default(1)
+
+  @@index([post_id, taxonomy], name: "post_taxonomy")
+  @@index([post_id, term_id], name: "post_term")
+}
+
+model wp_yoast_seo_links {
+  id             BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  url            String @db.VarChar(255)
+  post_id        BigInt @db.UnsignedBigInt
+  target_post_id BigInt @db.UnsignedBigInt
+  type           String @db.VarChar(8)
+
+  @@index([post_id, type], name: "link_direction")
+}
+
+model wp_yoast_seo_meta {
+  object_id           BigInt @unique @db.UnsignedBigInt
+  internal_link_count Int?   @db.UnsignedInt
+  incoming_link_count Int?   @db.UnsignedInt
+}
+
+enum wp_wfConfig_autoload {
+  no
+  yes
+}
+
+enum wp_wfTrafficRates_hitType {
+  hit
+  // 404 @map("404")
+}
+
+enum wp_wfls_2fa_secrets_mode {
+  authenticator
+}
+
+enum wp_wfls_settings_autoload {
+  no
+  yes
+}
