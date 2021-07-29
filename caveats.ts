@@ -146,30 +146,67 @@ export function fixEntitiesInCodeBlock(post: string) {
   });
 }
 
+function codepenReplacer(content: string): string {
+  const [, height] = /data-height="(.*?)"/gi.exec(content) ?? [];
+  const [, themeId] = /data-theme-id="(.*?)"/gi.exec(content) ?? [];
+  const [, slugHash] = /data-slug-hash="(.*?)"/gi.exec(content) ?? [];
+  const [, defaultTab] = /data-default-tab="(.*?)"/gi.exec(content) ?? [];
+  const [, user] = /data-user="(.*?)"/gi.exec(content) ?? [];
+  const [, embedVersion] = /data-embed-version="(.*?)"/gi.exec(content) ?? [];
+  let [, penTitle] = /data-pen-title="(.*?)"/gi.exec(content) ?? [];
+  if (penTitle === slugHash) {
+    penTitle = '';
+  }
+
+  const props = Object.entries({ height, themeId, slugHash, defaultTab, user, embedVersion, penTitle })
+    .filter(([, value]) => !!value)
+    .map(([key, value]) => `${key}=${JSON.stringify(String(value))}`)
+    .join(' ');
+
+  return `<CodepenWidget ${props}><a href="http://codepen.io/${user}/pen/${slugHash}/">Zobacz Codepen${
+    penTitle ? ' ' + penTitle : ''
+  }</a>.</CodepenWidget>`;
+}
+
 async function handleShortcodes(content: string) {
   const sloganWithCategory = /\[typeofweb-courses-slogan category="(.*?)"\]/gi;
   const slogan = /\[typeofweb-courses-slogan\]/gi;
   const gallery = /\[gallery\s+(.*?)\]/gi;
   const galleryInner = /((\w+)="(.*?)")/gi;
-  const banners = `
-  <div style="text-align: center; margin-bottom: 40px;">[typeofweb-mailchimp twitle=""]</div>
-  <div style="text-align: center;">[typeofweb-facebook-page]</div>
-`;
+  const banner1 = `<div style="text-align: center; margin-bottom: 40px;">[typeofweb-mailchimp title=""]</div>`;
+  const banner2 = `<div style="text-align: center;">[typeofweb-facebook-page]</div>`;
   const wtf = `<div class="grammarly-disable-indicator"></div>`;
-
+  const olStart = /<ol start=(\d+)>/g;
+  const styles = /<style>([\s\S]*?)<\/style>/gi;
+  const scripts = /<script>([\s\S]*?)<\/script>/gi;
+  const important = /(\s+)class=important(\s+|>)/gi;
+  const texOpen = /\\\\\[/g;
+  const texClose = /\\\\\]/g;
+  const more = /<!--\s*more\s*-->/;
   const caption =
     /\[caption (?<attributes>(?:\w+=".*?"\s*)*?)\](?:(?:(?<figure><(\w+).*?<\/\3>)\s*(?<caption>.*?))|(?:(?<figurevoid><(\w+).*?\/>)\s*(?<captionvoid>.*?)))\[\/caption\]/gi;
+  const codepen = /<p .*?data-slug-hash=".*?<\/p>/gims;
 
   const almostDoneContent = content
+    .replace(/language-language-/g, 'language-')
+    .replace(more, `{/* more */}`)
     .replace(wtf, '')
-    .replace(banners, '<NewsletterForm /><FacebookPageWidget />')
+    .replace(texOpen, '$$$$')
+    .replace(texClose, '$$$$')
+    .replace(styles, '')
+    .replace(scripts, '')
+    .replace(olStart, '<ol start="$1">')
+    .replace(important, '$1class="important"$2')
+    .replace(banner1, '<NewsletterForm />')
+    .replace(banner2, '<FacebookPageWidget />')
     .replace(
       slogan,
       '<a href="https://szkolenia.typeofweb.com/" target="_blank">zapisz się na szkolenie w Type of Web</a>.',
     )
+    .replace(codepen, codepenReplacer)
     .replace(
       sloganWithCategory,
-      '<a href="https://szkolenia.typeofweb.com/" target="_blank">zapisz się na szkolenie z $1</a>',
+      '<a href="https://szkolenia.typeofweb.com/" target="_blank">zapisz się na szkolenie z $1</a>.',
     )
     .replace(
       caption,

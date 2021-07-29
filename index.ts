@@ -36,7 +36,7 @@ type PromiseValue<T> = T extends PromiseLike<infer R> ? R : T;
 
 async function run() {
   const postsWithThumb = await getAllPosts();
-  const basePath = Path.resolve(__dirname, 'out');
+  const basePath = Path.resolve(__dirname, '..', 'design-tailwind', 'wordpress_posts');
 
   // taxonomies
   // category
@@ -50,7 +50,11 @@ async function run() {
 
   const postsToSave = await Promise.all(
     postsWithThumb.map(async (post) => {
-      const isMarkdown = getMeta('_wpcom_is_markdown', post.metas_);
+      const isMarkdown =
+        !!getMeta('_wpcom_is_markdown', post.metas_) &&
+        post.post_content_filtered.includes('## ') &&
+        !post.post_content_filtered.includes('<pre class="') &&
+        !post.post_content_filtered.includes('<code class="');
 
       const focusKeywords: Array<string> | undefined = getMeta('_yoast_wpseo_focuskeywords', post.metas_);
       const focusKeywordSynonyms: Array<string> | undefined = getMeta('_yoast_wpseo_keywordsynonyms', post.metas_);
