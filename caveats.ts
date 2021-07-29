@@ -182,6 +182,8 @@ async function handleShortcodes(content: string) {
   const important = /(\s+)class=important(\s+|>)/gi;
   const texOpen = /\\\\\[/g;
   const texClose = /\\\\\]/g;
+  const inlineTexOpen = /\\\\\(/g;
+  const inlineTexClose = /\\\\\)/g;
   const more = /<!--\s*more\s*-->/;
   const caption =
     /\[caption (?<attributes>(?:\w+=".*?"\s*)*?)\](?:(?:(?<figure><(\w+).*?<\/\3>)\s*(?<caption>.*?))|(?:(?<figurevoid><(\w+).*?\/>)\s*(?<captionvoid>.*?)))\[\/caption\]/gi;
@@ -193,6 +195,8 @@ async function handleShortcodes(content: string) {
     .replace(wtf, '')
     .replace(texOpen, '$$$$')
     .replace(texClose, '$$$$')
+    .replace(inlineTexOpen, '$$')
+    .replace(inlineTexClose, '$$')
     .replace(styles, '')
     .replace(scripts, '')
     .replace(olStart, '<ol start="$1">')
